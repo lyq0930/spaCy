@@ -32,6 +32,7 @@ segmenter = "char"
 [initialize.tokenizer]
 pkuseg_model = null
 pkuseg_user_dict = "default"
+jieba_user_dict = ""
 """
 
 
@@ -58,6 +59,7 @@ class ChineseTokenizer(DummyTokenizer):
         self.vocab = nlp.vocab
         if isinstance(segmenter, Segmenter):
             segmenter = segmenter.value
+        self.dict = dict
         self.segmenter = segmenter
         self.pkuseg_seg = None
         self.jieba_seg = None
@@ -80,6 +82,7 @@ class ChineseTokenizer(DummyTokenizer):
         nlp: Optional[Language] = None,
         pkuseg_model: Optional[str] = None,
         pkuseg_user_dict: Optional[str] = "default",
+        jieba_user_dict: Optional[str] = "",
     ):
         if self.segmenter == Segmenter.pkuseg:
             if pkuseg_user_dict is None:
@@ -87,6 +90,9 @@ class ChineseTokenizer(DummyTokenizer):
             self.pkuseg_seg = try_pkuseg_import(
                 pkuseg_model=pkuseg_model, pkuseg_user_dict=pkuseg_user_dict
             )
+        if self.segmenter == Segmenter.jieba:
+            if len(jieba_user_dict) != 0:
+                self.jieba_seg.load_userdict(jieba_user_dict)
 
     def __call__(self, text: str) -> Doc:
         if self.segmenter == Segmenter.jieba:
